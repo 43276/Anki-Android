@@ -57,6 +57,9 @@ class ReviewerMenuView : LinearLayout {
 
     fun isEmpty() = frontMenu.size == 0 && overflowMenu.size == 0
 
+    val isPopupShowing: Boolean
+        get() = binding.frontMenuView.isOverflowMenuShowing || binding.overflowMenuView.isOverflowMenuShowing
+
     fun findItem(id: Int): MenuItemImpl? = (frontMenu.findItem(id) ?: overflowMenu.findItem(id)) as? MenuItemImpl
 
     fun setOnMenuItemClickListener(listener: ActionMenuView.OnMenuItemClickListener) {

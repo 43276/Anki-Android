@@ -10,7 +10,7 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- generic strings -->
-    <string name="disabled">Disabled</string>
+    <string name="disabled" comment="Generic preference option indicating a feature is disabled; distinct from the pet media group status">Disabled</string>
     <plurals name="pref_summ_minutes">
         <item quantity="one">%d min</item>
         <item quantity="other">%d mins</item>
@@ -30,7 +30,7 @@
     <string name="pref_cat_themes" maxLength="41">Themes</string>
     <string name="pref_cat_gestures" maxLength="41">Gestures</string>
     <string name="pref_cat_controls" maxLength="41">Controls</string>
-    <string name="pref_cat_advanced" maxLength="41">Advanced</string>
+    <string name="pref_cat_advanced" maxLength="41" comment="Name of the application's advanced preference category; distinct from advanced pet parameters">Advanced</string>
     <string name="pref_cat_workarounds" maxLength="41">Workarounds</string>
     <string name="pref_cat_plugins" maxLength="41">Plugins</string>
     <string name="pref_cat_editing" maxLength="41">Editing</string>

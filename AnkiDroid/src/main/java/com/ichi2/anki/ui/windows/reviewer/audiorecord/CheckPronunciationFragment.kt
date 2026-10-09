@@ -31,6 +31,9 @@ class CheckPronunciationFragment : Fragment(R.layout.fragment_check_pronunciatio
 
     private val binding by viewBinding(FragmentCheckPronunciationBinding::bind)
 
+    val isAudioBusy: Boolean
+        get() = view != null && (binding.recordView.isRecording || viewModel.isPlayingFlow.value)
+
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (!isGranted) {

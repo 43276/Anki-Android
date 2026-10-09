@@ -599,7 +599,7 @@ abstract class AbstractFlashcardViewer :
         registerReceiver()
         restoreCollectionPreferences(col)
         initLayout()
-        cardRenderContext = createInstance(this, col, typeAnswer!!)
+        cardRenderContext = createInstance(this, col, typeAnswer!!, applyReviewerBackground = this is Reviewer)
 
         // Initialize text-to-speech. This is an asynchronous operation.
         tts.initialize(this, ReadTextListener())

@@ -3,9 +3,15 @@
 package com.ichi2.anki.preferences
 
 import android.content.Context
+import android.os.Looper
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
+import androidx.preference.ListPreference
+import androidx.preference.PreferenceManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ichi2.anki.R
 import com.ichi2.anki.RobolectricTest
@@ -23,6 +29,7 @@ import org.hamcrest.Matchers.equalTo
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -74,6 +81,40 @@ class PreferencesTest : RobolectricTest() {
                     activity.supportFragmentManager.commitNow {
                         add(R.id.settings_container, it)
                     }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `background chooser shows new study screen notice without hiding options`() {
+        launchActivity<PreferencesActivity>(PreferencesDestination.Root).use { activityScenario ->
+            activityScenario.onActivity { activity ->
+                val fragment = AppearanceSettingsFragment()
+                activity.supportFragmentManager.commitNow {
+                    replace(R.id.settings_container, fragment)
+                }
+                val key = activity.getString(R.string.reviewer_background_key)
+                val preference = fragment.findPreference<ListPreference>(key)!!
+                preference.value = activity.getString(R.string.reviewer_background_official_value)
+                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity)
+                for (index in listOf(1, 0)) {
+                    preference.performClick()
+                    activity.supportFragmentManager.executePendingTransactions()
+                    val dialogFragment =
+                        activity.supportFragmentManager.findFragmentByTag("androidx.preference.PreferenceFragment.DIALOG") as DialogFragment
+                    val dialog = dialogFragment.requireDialog() as AlertDialog
+                    assertEquals(
+                        activity.getString(R.string.reviewer_background_new_study_screen_notice),
+                        dialog.findViewById<TextView>(android.R.id.message)!!.text.toString(),
+                    )
+                    val list = dialog.listView
+                    assertTrue(list.isShown, "The notice must not hide the background choices")
+                    assertEquals(2, list.adapter.count)
+                    list.performItemClick(null, index, list.adapter.getItemId(index))
+                    shadowOf(Looper.getMainLooper()).idle()
+                    assertEquals(preference.entryValues[index].toString(), sharedPreferences.getString(key, null))
+                    activity.supportFragmentManager.executePendingTransactions()
                 }
             }
         }

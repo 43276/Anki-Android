@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="reviewer_pet_enabled_key" translatable="false">reviewerPetEnabled</string>
+    <string name="reviewer_pet_parameters_key" translatable="false">reviewerPetParameters</string>
+    <string name="reviewer_pet_media_key" translatable="false">reviewerPetMedia</string>
+    <string name="reviewer_pet_fly_probability_key" translatable="false">reviewerPetFlyProbability</string>
+    <string name="reviewer_pet_fly_cooldown_key" translatable="false">reviewerPetFlyCooldown</string>
+    <string name="reviewer_pet_reminder_enabled_key" translatable="false">reviewerPetReminderEnabled</string>
+    <string name="reviewer_pet_reminder_seconds_key" translatable="false">reviewerPetReminderSeconds</string>
+    <string name="reviewer_pet_repeat_reminder_key" translatable="false">reviewerPetRepeatReminder</string>
+    <string name="reviewer_pet_repeat_seconds_key" translatable="false">reviewerPetRepeatSeconds</string>
+    <string name="reviewer_pet_size_key" translatable="false">reviewerPetSize</string>
+    <string name="reviewer_pet_opacity_key" translatable="false">reviewerPetOpacity</string>
+    <string name="reviewer_pet_move_duration_key" translatable="false">reviewerPetMoveDuration</string>
+    <string name="reviewer_pet_edge_hide_key" translatable="false">reviewerPetEdgeHide</string>
+    <string name="reviewer_pet_auto_expand_key" translatable="false">reviewerPetAutoExpand</string>
+    <string name="reviewer_pet_auto_expand_seconds_key" translatable="false">reviewerPetAutoExpandSeconds</string>
+    <string name="reviewer_pet_edge_preference_key" translatable="false">reviewerPetEdgePreference</string>
+    <string name="reviewer_pet_fallback_size_key" translatable="false">reviewerPetFallbackSize</string>
+    <string name="reviewer_pet_avoidance_key" translatable="false">reviewerPetAvoidance</string>
+    <string name="reviewer_pet_movement_curve_key" translatable="false">reviewerPetMovementCurve</string>
+    <string name="reviewer_pet_multi_click_key" translatable="false">reviewerPetMultiClick</string>
+    <string name="reviewer_pet_drag_sensitivity_key" translatable="false">reviewerPetDragSensitivity</string>
+    <string name="reviewer_pet_title" maxLength="41">Pet</string>
+    <string name="reviewer_pet_enabled" maxLength="41">Enable pet</string>
+    <string name="reviewer_pet_enabled_summary">A single pet accompanies your review session. Add or enable media to display it.</string>
+    <string name="reviewer_pet_parameters" maxLength="41">Custom parameters</string>
+    <string name="reviewer_pet_media" maxLength="41">Pet media</string>
+    <string name="reviewer_pet_basic" maxLength="41" comment="Category for basic pet parameters; distinct from the application's general preferences and deck options">General</string>
+    <string name="reviewer_pet_advanced" maxLength="41" comment="Category for advanced pet parameters; distinct from the application's advanced preferences">Advanced</string>
+    <string name="reviewer_pet_empty">No enabled pet media</string>
+    <string name="reviewer_pet_empty_summary">Add a media group and enable it to display a pet. No media is included by default.</string>
+    <string name="reviewer_pet_add_group">Add media group</string>
+    <string name="reviewer_pet_group_name">Group name</string>
+    <string name="reviewer_pet_group_name_hint">Enter a name for this group</string>
+    <string name="reviewer_pet_add_files">Add files</string>
+    <string name="reviewer_pet_rename_group">Rename group</string>
+    <string name="reviewer_pet_delete_group">Delete group</string>
+    <string name="reviewer_pet_delete_group_confirm">Delete “%1$s” and its imported copies? Original local files will be kept.</string>
+    <string name="reviewer_pet_remove_file">Remove file</string>
+    <string name="reviewer_pet_remove_file_confirm">Remove this file from the group?</string>
+    <string name="reviewer_pet_preview" comment="Action to preview an imported pet image or video; distinct from previewing flashcards">Preview</string>
+    <string name="reviewer_pet_no_files">This group has no files. Add media before enabling it.</string>
+    <string name="reviewer_pet_import_failed">No supported media was imported. Choose a valid image or video.</string>
+    <string name="reviewer_pet_import_partial">Imported %1$d of %2$d selected files.</string>
+    <string name="reviewer_pet_operation_failed">Unable to save pet media changes.</string>
+    <string name="reviewer_pet_enabled_group">Enable this group</string>
+    <string name="reviewer_pet_group_summary">%1$d files · %2$s</string>
+    <string name="reviewer_pet_state_enabled">Enabled</string>
+    <string name="reviewer_pet_state_disabled" comment="Status of a pet media group excluded from pet selection; distinct from generic disabled preference options">Disabled</string>
+    <string name="reviewer_pet_range">%1$d–%2$d %3$s</string>
+    <string name="reviewer_pet_unit_seconds">s</string>
+    <string name="reviewer_pet_unit_percent">%</string>
+    <string name="reviewer_pet_unit_ms">ms</string>
+    <string name="reviewer_pet_unit_dp">dp</string>
+    <string name="reviewer_pet_fly_probability" maxLength="41">Fly-through probability</string>
+    <string name="reviewer_pet_fly_cooldown" maxLength="41">Fly-through cooldown</string>
+    <string name="reviewer_pet_reminder_enabled" maxLength="41">Dwell reminders</string>
+    <string name="reviewer_pet_reminder_seconds" maxLength="41">Time before a reminder</string>
+    <string name="reviewer_pet_repeat_reminder" maxLength="41">Remind again after dismissal</string>
+    <string name="reviewer_pet_repeat_seconds" maxLength="41">Repeat reminder interval</string>
+    <string name="reviewer_pet_size" maxLength="41">Pet size</string>
+    <string name="reviewer_pet_opacity" maxLength="41">Opacity</string>
+    <string name="reviewer_pet_move_duration" maxLength="41">Movement duration</string>
+    <string name="reviewer_pet_edge_hide" maxLength="41">Amount hidden at the edge</string>
+    <string name="reviewer_pet_auto_expand" maxLength="41">Automatically expand from the edge</string>
+    <string name="reviewer_pet_auto_expand_seconds" maxLength="41">Time before automatic expansion</string>
+    <string name="reviewer_pet_edge_preference" maxLength="41">Preferred edge</string>
+    <string name="reviewer_pet_fallback_size" maxLength="41">Size when no space is available</string>
+    <string name="reviewer_pet_avoidance" maxLength="41">Content clearance</string>
+    <string name="reviewer_pet_movement_curve" maxLength="41">Movement curve</string>
+    <string name="reviewer_pet_multi_click" maxLength="41">Multiple-click interval</string>
+    <string name="reviewer_pet_drag_sensitivity" maxLength="41">Drag sensitivity</string>
+    <string-array name="reviewer_pet_edge_entries"><item>Nearest edge</item><item>Left edge</item><item>Right edge</item></string-array>
+    <string-array name="reviewer_pet_curve_entries"><item>Gentle acceleration</item><item>Ease in and out</item><item>Quick acceleration and gradual stop</item></string-array>
+    <string-array name="reviewer_pet_edge_values" translatable="false"><item>nearest</item><item>left</item><item>right</item></string-array>
+    <string-array name="reviewer_pet_curve_values" translatable="false"><item>linear</item><item>ease-in-out</item><item>ease-out</item></string-array>
+    <string name="reviewer_pet_file">File %1$d</string>
+</resources>
+

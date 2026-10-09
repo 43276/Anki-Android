@@ -2,6 +2,7 @@
 
 package com.ichi2.anki.ui.windows.reviewer
 
+import android.os.SystemClock
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import anki.collection.OpChanges
@@ -43,6 +44,7 @@ import com.ichi2.anki.previewer.typeAnsRe
 import com.ichi2.anki.reviewer.BindingProcessor
 import com.ichi2.anki.reviewer.CardSide
 import com.ichi2.anki.reviewer.ReviewerBinding
+import com.ichi2.anki.reviewer.pets.ReviewerPetSession
 import com.ichi2.anki.servicelayer.MARKED_TAG
 import com.ichi2.anki.servicelayer.NoteService
 import com.ichi2.anki.servicelayer.isBuryNoteAvailable
@@ -60,12 +62,15 @@ import com.ichi2.anki.utils.ext.getLongOrNull
 import com.ichi2.anki.utils.ext.setUserFlagForCards
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.intellij.lang.annotations.Language
+import org.json.JSONObject
 import timber.log.Timber
 import com.ichi2.anki.common.destinations.Destination as NavigateDestination
 
@@ -110,6 +115,13 @@ class ReviewerViewModel(
     val pageUpFlow = MutableSharedFlow<Unit>()
     val pageDownFlow = MutableSharedFlow<Unit>()
     val statesMutationEvalFlow = MutableSharedFlow<String>()
+    val reviewerPetSession = ReviewerPetSession(savedStateHandle)
+    val isPetPresentationBlocked: Boolean
+        get() = isPetPresentationSuspended || cardMediaPlayer.isPlaying
+    val isPetPresentationSuspended: Boolean
+        get() =
+            isInputFocused || whiteboardEnabledFlow.value ||
+                autoAdvance.isEnabled
 
     override val server: AnkiServer = AnkiServer(this, repository.getServerPort()).also { it.start() }
     private val stateMutationKey = repository.generateStateMutationKey()
@@ -163,6 +175,10 @@ class ReviewerViewModel(
         Timber.v("ReviewerViewModel::onPageFinished %b", isAfterRecreation)
         if (isAfterRecreation) {
             launchCatchingIO {
+                val cardId = currentCard.await().id
+                withContext(Dispatchers.Main.immediate) {
+                    if (reviewerPetSession.visitId == 0L) reviewerPetSession.beginVisit(cardId)
+                }
                 // TODO handle "Don't keep activities"
                 if (showingAnswer.value) {
                     showAnswer()
@@ -442,6 +458,17 @@ class ReviewerViewModel(
         bytes: ByteArray,
     ): ByteArray {
         when (uri.ankidroidMethodName) {
+            "reviewerPetState" -> {
+                if (bytes.size <= 8192) {
+                    runCatching {
+                        val report = JSONObject(bytes.decodeToString())
+                        withContext(Dispatchers.Main.immediate) {
+                            reviewerPetSession.report(report, SystemClock.elapsedRealtime())
+                        }
+                    }
+                }
+                return byteArrayOf()
+            }
             "focusin" -> {
                 isInputFocused = true
                 return byteArrayOf()
@@ -522,7 +549,10 @@ class ReviewerViewModel(
         return ByteArray(0)
     }
 
-    private suspend fun answerCardInternal(rating: Rating) {
+    private suspend fun answerCardInternal(
+        rating: Rating,
+        manual: Boolean = true,
+    ) {
         Timber.v("ReviewerViewModel::answerCard")
         mutationSignal.await()
         val state = queueState.await() ?: return
@@ -537,6 +567,11 @@ class ReviewerViewModel(
             }
 
         undoableOp(handler = this) { sched.answerCard(answer) }
+        if (manual && (rating == Rating.GOOD || rating == Rating.EASY)) {
+            withContext(Dispatchers.Main.immediate) {
+                reviewerPetSession.onManualRating(SystemClock.elapsedRealtime())
+            }
+        }
         answerFeedbackFlow.emit(rating)
         savedStateHandle[KEY_PREVIOUS_CARD_ID] = card.id
 
@@ -599,6 +634,7 @@ class ReviewerViewModel(
 
         val card = state.topCard
         currentCard = CompletableDeferred(card)
+        withContext(Dispatchers.Main.immediate) { reviewerPetSession.beginVisit(card.id) }
         setupAnswerTimer(card)
         autoAdvance.onCardChange(card)
         onCardUpdatedFlow.emit(Unit) // must be before showQuestion()
@@ -709,7 +745,10 @@ class ReviewerViewModel(
         repository.isRecordVoiceEnabled = newValue
     }
 
-    fun executeAction(action: ViewerAction) {
+    fun executeAction(
+        action: ViewerAction,
+        manual: Boolean = true,
+    ) {
         Timber.v("ReviewerViewModel::executeAction %s", action.name)
         launchCatchingIO {
             actionsMutex.withLock {
@@ -747,10 +786,10 @@ class ReviewerViewModel(
                     ViewerAction.TOGGLE_FLAG_TURQUOISE -> toggleFlag(Flag.TURQUOISE)
                     ViewerAction.TOGGLE_FLAG_PURPLE -> toggleFlag(Flag.PURPLE)
                     ViewerAction.SHOW_ANSWER -> if (!showingAnswer.value) showAnswerInternal()
-                    ViewerAction.ANSWER_AGAIN -> answerCardInternal(Rating.AGAIN)
-                    ViewerAction.ANSWER_HARD -> answerCardInternal(Rating.HARD)
-                    ViewerAction.ANSWER_GOOD -> answerCardInternal(Rating.GOOD)
-                    ViewerAction.ANSWER_EASY -> answerCardInternal(Rating.EASY)
+                    ViewerAction.ANSWER_AGAIN -> answerCardInternal(Rating.AGAIN, manual)
+                    ViewerAction.ANSWER_HARD -> answerCardInternal(Rating.HARD, manual)
+                    ViewerAction.ANSWER_GOOD -> answerCardInternal(Rating.GOOD, manual)
+                    ViewerAction.ANSWER_EASY -> answerCardInternal(Rating.EASY, manual)
                     ViewerAction.SHOW_HINT -> eval.emit("ankidroid.showHint()")
                     ViewerAction.SHOW_ALL_HINTS -> eval.emit("ankidroid.showAllHints()")
                     ViewerAction.TOGGLE_WHITEBOARD -> toggleWhiteboard()
@@ -798,9 +837,9 @@ class ReviewerViewModel(
             QuestionAction.SHOW_ANSWER -> executeAction(ViewerAction.SHOW_ANSWER)
             QuestionAction.SHOW_REMINDER -> actionFeedbackFlow.emit(TR.studyingQuestionTimeElapsed())
             AnswerAction.BURY_CARD -> executeAction(ViewerAction.BURY_CARD)
-            AnswerAction.ANSWER_AGAIN -> executeAction(ViewerAction.ANSWER_AGAIN)
-            AnswerAction.ANSWER_GOOD -> executeAction(ViewerAction.ANSWER_GOOD)
-            AnswerAction.ANSWER_HARD -> executeAction(ViewerAction.ANSWER_HARD)
+            AnswerAction.ANSWER_AGAIN -> executeAction(ViewerAction.ANSWER_AGAIN, manual = false)
+            AnswerAction.ANSWER_GOOD -> executeAction(ViewerAction.ANSWER_GOOD, manual = false)
+            AnswerAction.ANSWER_HARD -> executeAction(ViewerAction.ANSWER_HARD, manual = false)
             AnswerAction.SHOW_REMINDER -> actionFeedbackFlow.emit(TR.studyingAnswerTimeElapsed())
         }
     }

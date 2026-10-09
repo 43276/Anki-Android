@@ -12,7 +12,9 @@ import com.ichi2.anki.libanki.Collection
 import com.ichi2.anki.libanki.TemplateManager.TemplateRenderContext.TemplateRenderOutput
 import com.ichi2.anki.libanki.template.MathJax
 import com.ichi2.anki.multimedia.expandSounds
+import com.ichi2.anki.reviewer.ReviewerBackground
 import com.ichi2.anki.reviewer.ReviewerCustomFonts
+import com.ichi2.utils.toRGBHex
 import timber.log.Timber
 
 /**
@@ -25,6 +27,7 @@ class AndroidCardRenderContext(
     private val cardAppearance: CardAppearance,
     private val cardTemplate: CardTemplate,
     private val showAudioPlayButtons: Boolean,
+    private val reviewerCanvasColor: () -> Int? = { null },
 ) {
     /**
      * Renders Android-specific functionality to produce a [RenderedCard]
@@ -58,7 +61,14 @@ class AndroidCardRenderContext(
     ): RenderedCard {
         val requiresMathjax = MathJax.textContainsMathjax(content)
 
-        val style = cardAppearance.style
+        val style =
+            buildString {
+                reviewerCanvasColor()?.let { color ->
+                    val canvas = color.toRGBHex()
+                    append(":root { --ankidroid-reviewer-canvas: $canvas; background-color: $canvas; }\n")
+                }
+                append(cardAppearance.style)
+            }
         val script =
             when (requiresMathjax) {
                 false -> ""
@@ -116,6 +126,7 @@ class AndroidCardRenderContext(
             context: Context,
             col: Collection,
             typeAnswer: TypeAnswer,
+            applyReviewerBackground: Boolean = false,
         ): AndroidCardRenderContext {
             val preferences = context.sharedPrefs()
             val cardAppearance = CardAppearance.create(ReviewerCustomFonts(), preferences, context.resources.configuration.fontScale)
@@ -126,6 +137,7 @@ class AndroidCardRenderContext(
                 cardAppearance,
                 cardHtmlTemplate,
                 showAudioPlayButtons,
+                reviewerCanvasColor = { if (applyReviewerBackground) ReviewerBackground.customColor(context) else null },
             )
         }
     }

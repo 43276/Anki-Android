@@ -57,6 +57,16 @@
             />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/background_image_title" >
+        <ListPreference
+            android:defaultValue="@string/reviewer_background_official_value"
+            android:entries="@array/reviewer_background_labels"
+            android:entryValues="@array/reviewer_background_values"
+            android:key="@string/reviewer_background_key"
+            android:title="@string/reviewer_background_title"
+            android:dialogMessage="@string/reviewer_background_new_study_screen_notice"
+            android:dialogLayout="@layout/dialog_reviewer_background_notice"
+            android:icon="@drawable/ic_color_lens_white_24dp"
+            app:useSimpleSummaryProvider="true"/>
         <Preference
             android:defaultValue="false"
             android:key="@string/pref_deck_picker_background_key"

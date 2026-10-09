@@ -118,6 +118,23 @@
             />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/reviewer_pet_title"
+        android:dependency="@string/new_reviewer_options_key">
+        <SwitchPreferenceCompat
+            android:key="@string/reviewer_pet_enabled_key"
+            android:title="@string/reviewer_pet_enabled"
+            android:summary="@string/reviewer_pet_enabled_summary"
+            android:dependency="@string/new_reviewer_options_key"
+            android:defaultValue="false"/>
+        <Preference
+            android:key="@string/reviewer_pet_parameters_key"
+            android:title="@string/reviewer_pet_parameters"
+            android:fragment="com.ichi2.anki.preferences.ReviewerPetParametersFragment"/>
+        <Preference
+            android:key="@string/reviewer_pet_media_key"
+            android:title="@string/reviewer_pet_media"
+            android:fragment="com.ichi2.anki.preferences.ReviewerPetMediaFragment"/>
+    </PreferenceCategory>
     <com.ichi2.preferences.RelatedSettingsPreference
         app:relatedTitles="@array/study_screen_related_titles"
         app:relatedFragments="@array/study_screen_related_fragments"

@@ -1,120 +1,59 @@
-<p align="center">
-<img alt="" src="docs/graphics/logos/banner_readme.png"/>
-</p>
+# AnkiDroid（个人 fork）
 
-<a href="https://github.com/ankidroid/Anki-Android/releases"><img src="https://img.shields.io/github/v/release/ankidroid/Anki-Android" alt="release"/></a>
-<a href="https://github.com/ankidroid/Anki-Android/actions"><img src="https://img.shields.io/github/checks-status/ankidroid/Anki-Android/main?label=build" alt="build"/></a>
-<a href="https://opencollective.com/ankidroid"><img src="https://img.shields.io/opencollective/all/ankidroid" alt="Open Collective backers and sponsors"/></a>
-<a href="https://github.com/ankidroid/Anki-Android/issues"><img src="https://img.shields.io/github/commit-activity/m/ankidroid/Anki-Android" alt="commit-activity"/></a>
-<a href="https://github.com/ankidroid/Anki-Android/network/members"><img src="https://img.shields.io/github/forks/ankidroid/Anki-Android" alt="forks"/></a>
-<a href="https://github.com/ankidroid/Anki-Android/stargazers"><img src="https://img.shields.io/github/stars/ankidroid/Anki-Android" alt="stars"/></a>
-<a href="https://crowdin.com/project/ankidroid"><img src="https://badges.crowdin.net/ankidroid/localized.svg"></img></a>
-<a href="https://github.com/ankidroid/Anki-Android/graphs/contributors"><img src="https://img.shields.io/github/contributors/ankidroid/Anki-Android" alt="contributors"/></a>
-<a href="https://discord.gg/qjzcRTx"><img src="https://img.shields.io/discord/368267295601983490"></img></a>
-<a href="https://github.com/ankidroid/Anki-Android/blob/main/COPYING"><img src="https://img.shields.io/github/license/ankidroid/Anki-Android" alt="license"/></a>
+本仓库 fork 自 [AnkiDroid 官方项目](https://github.com/ankidroid/Anki-Android)，用于维护个人定制修改，非官方发行版。
 
-# AnkiDroid
-A semi-official port of the open source [Anki](https://apps.ankiweb.net/index.html) spaced repetition flashcard system to Android. Memorize anything with AnkiDroid!
+AnkiDroid 是 Android 上的间隔重复记忆应用。通用功能和使用方法请参考 [上游 README](https://github.com/ankidroid/Anki-Android#readme) 和 [用户手册](https://docs.ankidroid.org/)。
 
-<img src="docs/graphics/logos/ankidroid_logo.png" align="right" width="40%" height="100%"></img>
+## 定制修改
 
-### Features
+- 最新版基于[原版v2.25.1](https://github.com/ankidroid/Anki-Android/releases/tag/v2.25.1)修改。
+- 「设置 → 显示 → 背景」可选择复习页的「官方默认」或「修改配置」；修改配置在深色模式使用纯黑、浅色模式使用纯白。
+- 新学习屏支持复习会话级桌宠，跨翻面和换卡保留状态。请在「设置 → 新学习屏 → 桌宠」开启功能、调整参数，并导入自己的媒体组；应用不附带素材。
+- 目前适配了中英文。
 
-<div style="display:flex;">
- 
-- Night mode
-- Whiteboard 
-- Progress widget
-- Detailed statistics
-- Syncing with AnkiWeb
-- Write answers (optional)
-- Text-to-speech integration
-- More than 10,000 premade decks
-- Spaced repetition (AI-optimized [FSRS algorithm](https://github.com/open-spaced-repetition))
-- Supported contents: text, images, sounds, MathJax
-- Add cards by intent from other applications like dictionaries
+各版本的具体改动以本仓库的提交记录和发布说明为准。
 
-</div>
+## 安装与反馈
 
-Install
----------
-<div style="display:flex;">
+- 本 fork 的安装包（如有）见 [Releases](https://github.com/43276/Anki-Android/releases)。
+- 安装说明、版本差异和签名证书指纹以本 fork 的发布说明为准。
+- 定制版本的问题请在本仓库反馈，并注明版本、复现步骤及与上游的差异。
 
-<a href="https://play.google.com/store/apps/details?id=com.ichi2.anki&utm_source=global_co&utm_medium=prtnr&utm_content=Mar2515&utm_campaign=PartBadge&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1">
-    <img alt="Get it on Google Play" height="80"
-        src="docs/graphics/logos/google-badge.png" /></a>
+## 本地构建
 
-<a href="https://f-droid.org/repository/browse/?fdid=com.ichi2.anki">
-    <img alt="Get it on F-Droid" height="80"
-        src="docs/graphics/logos/f-droid-badge.png"></a>
+使用 Android Studio 打开仓库，安装构建脚本要求的 Android SDK，并按 [Gradle JVM 配置](gradle/gradle-daemon-jvm.properties) 设置 JDK。更多环境说明见 [上游开发指南](https://github.com/ankidroid/Anki-Android/wiki/Development-Guide) 和 [本地 JVM 说明](docs/development/gradle-daemon-jvm.md)。
 
-<a href="http://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/ankidroid/Anki-Android">
-    <img alt="Get it on Obtainium" height="80"
-        src="https://github.com/user-attachments/assets/713d71c5-3dec-4ec4-a3f2-8d28d025a9c6"/></a>
+在仓库根目录构建用于本地调试的 `fullDebug` APK：
 
-</div>
-
-Signing certificate fingerprint to [verify](https://developer.android.com/studio/command-line/apksigner#usage-verify) the APK:
-```
-SHA-256: 2071534f0f4b5e54ae952dd275d70da6e3459ee69909d2ab1b4843c4c5b21a45 
-SHA-1: f24e06a3657b190a12671100402df32d7b9b3d36
+```powershell
+# Windows / PowerShell
+.\gradlew.bat :AnkiDroid:assembleFullDebug
 ```
 
-Wiki
-----
-View [Wiki](https://github.com/ankidroid/Anki-Android/wiki)
+```sh
+# Linux / macOS
+./gradlew :AnkiDroid:assembleFullDebug
+```
 
-Help
-----
-Check the [user manual](https://docs.ankidroid.org/) and the wiki for usage instructions. See the [help page](https://docs.ankidroid.org/help.html) 
-for how to submit a bug report or contact a project member, etc.
+产物位于 `AnkiDroid/build/outputs/apk/full/debug/`。公开发行时应单独配置应用名称、包名和自己的 release 签名。
 
-Contribute
-----------
-You can contribute to AnkiDroid by beta testing, translating, or submitting code. 
-See the [contribution wiki page](https://github.com/ankidroid/Anki-Android/wiki/Contributing) for more info.
+## 许可证
 
-Join Us On
-----------
+本 fork 延续上游的许可证及版权声明，各文件和依赖以其自身声明为准：
 
-<a href="https://discord.gg/qjzcRTx"><img src="docs/graphics/logos/discord_logo_color.svg" height="46px"/></a>
-<a href="https://www.reddit.com/r/Anki"><img src="docs/graphics/logos/reddit_logo_color.png" height="50px"/></a>
-<a href="https://www.facebook.com/AnkiDroid/"><img src="docs/graphics/logos/facebook_logo_color.png" height="50px"/></a>
-<a href="https://x.com/ankidroid"><img src="docs/graphics/logos/twitter_logo.png" height="50px"/></a>
-<a href="https://forums.ankiweb.net/"><img src="/docs/graphics/logos/anki_forums_logo.png" height="50px"/></a>
+- AnkiDroid 主项目：[GPL-3.0-or-later](COPYING)。
+- 部分 Anki 后端代码：[AGPL-3.0-or-later](https://github.com/ankitects/anki/blob/main/LICENSE)；后端构建项目见 [Anki-Android-Backend](https://github.com/ankidroid/Anki-Android-Backend)。
+- AnkiDroid API：[LGPL-3.0-or-later](api/COPYING.LESSER)。
+- 第三方依赖：保留各自的许可证、版权和归属声明，参见 [上游许可证清单](https://github.com/ankidroid/Anki-Android/wiki/Licences)。
+
+发布修改后的 APK 时，需按适用许可证提供与该 APK 对应的完整源码和必要的构建脚本，包括修改及所用后端的对应源码。建议每次发布使用独立 tag，并在发布页注明源码入口、构建方法、修改内容和日期。
 
 ## Credits
-<!--- Do not rename this section. AnkiDroid contains a deep link to the section
-header - see https://github.com/ankidroid/Anki-Android/pull/11803 --->
+<!-- Do not rename this section. AnkiDroid contains a deep link to this heading.
+See https://github.com/ankidroid/Anki-Android/pull/11803. -->
 
-### Code Contributors
+感谢 AnkiDroid、Anki 的原作者、代码贡献者、翻译者及第三方依赖作者。
 
-Thanks to these awesome code contributors who keep this project going
-
-<a href="https://github.com/ankidroid/Anki-Android/graphs/contributors"><img src="https://opencollective.com/ankidroid/contributors.svg?width=890&button=false" /></a>
-
-### [Sponsors](https://opencollective.com/ankidroid#sponsor)
-<a href="https://opencollective.com/ankidroid#sponsor" target="_blank">
-  <img alt="AnkiDroid Sponsors" src="https://opencollective.com/Ankidroid/sponsors.svg?width=890" />
-</a>
-
-### [Backers](https://opencollective.com/ankidroid#backer)
-
-A big thank you to each of our backers 🙏
-<a href="https://opencollective.com/Ankidroid#backers" target="_blank"><img width=110 src="https://opencollective.com/Ankidroid/backers/badge.svg?"></a>
-
-<p>Your generous donations mean the world to us, and we can't express our gratitude enough. Your support fuels our mission and helps us make a real difference</p>
-
-<a href="https://opencollective.com/Ankidroid/donate" target="_blank">
-  <img alt="Donate to AnkiDroid" src="https://opencollective.com/Ankidroid/donate/button@2x.png?color=blue" width=200 />
-</a>
-
-### [Translators](https://crowdin.com/project/ankidroid/activity-stream)
-
-Thanks to our 1400 translators, for allowing us to be available, partially or totally, in 99 languages as of July 2022.
-
-License
--------
-* [GPL-3.0 License](https://github.com/ankidroid/Anki-Android/blob/main/COPYING)
-* [AGPL-3.0 License](https://github.com/ankitects/anki/blob/main/LICENSE) for some part of the back-end
-* [LGPL-3.0 License](https://github.com/ankidroid/Anki-Android/blob/main/api/COPYING.LESSER) for the AnkiDroid API
+- [AnkiDroid 贡献者](https://github.com/ankidroid/Anki-Android/graphs/contributors)
+- [Anki 项目](https://github.com/ankitects/anki)
+- [AnkiDroid 翻译项目](https://crowdin.com/project/ankidroid)

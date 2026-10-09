@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:title="@string/reviewer_pet_parameters">
+    <PreferenceCategory android:title="@string/reviewer_pet_basic">
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_fly_probability_key" android:title="@string/reviewer_pet_fly_probability" android:defaultValue="10" app:min="0" app:max="100"/>
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_fly_cooldown_key" android:title="@string/reviewer_pet_fly_cooldown" android:defaultValue="30" app:min="0" app:max="3600"/>
+        <SwitchPreferenceCompat android:key="@string/reviewer_pet_reminder_enabled_key" android:title="@string/reviewer_pet_reminder_enabled" android:defaultValue="true"/>
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_reminder_seconds_key" android:title="@string/reviewer_pet_reminder_seconds" android:defaultValue="60" app:min="5" app:max="3600"/>
+        <SwitchPreferenceCompat android:key="@string/reviewer_pet_repeat_reminder_key" android:title="@string/reviewer_pet_repeat_reminder" android:defaultValue="false"/>
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_repeat_seconds_key" android:title="@string/reviewer_pet_repeat_seconds" android:defaultValue="120" app:min="5" app:max="3600"/>
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_size_key" android:title="@string/reviewer_pet_size" android:defaultValue="96" app:min="32" app:max="256"/>
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_opacity_key" android:title="@string/reviewer_pet_opacity" android:defaultValue="100" app:min="25" app:max="100"/>
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_move_duration_key" android:title="@string/reviewer_pet_move_duration" android:defaultValue="900" app:min="100" app:max="10000"/>
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_edge_hide_key" android:title="@string/reviewer_pet_edge_hide" android:defaultValue="70" app:min="0" app:max="85"/>
+        <SwitchPreferenceCompat android:key="@string/reviewer_pet_auto_expand_key" android:title="@string/reviewer_pet_auto_expand" android:defaultValue="true"/>
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_auto_expand_seconds_key" android:title="@string/reviewer_pet_auto_expand_seconds" android:defaultValue="60" app:min="1" app:max="3600"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/reviewer_pet_advanced">
+        <ListPreference android:key="@string/reviewer_pet_edge_preference_key" android:title="@string/reviewer_pet_edge_preference" android:defaultValue="nearest" android:entries="@array/reviewer_pet_edge_entries" android:entryValues="@array/reviewer_pet_edge_values" app:useSimpleSummaryProvider="true"/>
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_fallback_size_key" android:title="@string/reviewer_pet_fallback_size" android:defaultValue="60" app:min="25" app:max="100"/>
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_avoidance_key" android:title="@string/reviewer_pet_avoidance" android:defaultValue="8" app:min="0" app:max="64"/>
+        <ListPreference android:key="@string/reviewer_pet_movement_curve_key" android:title="@string/reviewer_pet_movement_curve" android:defaultValue="ease-in-out" android:entries="@array/reviewer_pet_curve_entries" android:entryValues="@array/reviewer_pet_curve_values" app:useSimpleSummaryProvider="true"/>
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_multi_click_key" android:title="@string/reviewer_pet_multi_click" android:defaultValue="400" app:min="150" app:max="600"/>
+        <com.ichi2.preferences.NumberRangePreferenceCompat android:key="@string/reviewer_pet_drag_sensitivity_key" android:title="@string/reviewer_pet_drag_sensitivity" android:defaultValue="100" app:min="25" app:max="200"/>
+    </PreferenceCategory>
+</PreferenceScreen>

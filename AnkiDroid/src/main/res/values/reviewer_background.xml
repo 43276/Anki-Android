@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="reviewer_background_key" translatable="false">reviewerBackground</string>
+    <string name="reviewer_background_official_value" translatable="false">official</string>
+    <string name="reviewer_background_custom_value" translatable="false">custom</string>
+    <string name="reviewer_background_title" maxLength="41">Review screen background</string>
+    <string name="reviewer_background_official">Official default</string>
+    <string name="reviewer_background_custom">Modified configuration</string>
+    <string name="reviewer_background_new_study_screen_notice">Background color changes apply only to the new study screen. Enable it in Settings → New study screen.</string>
+    <string-array name="reviewer_background_labels">
+        <item>@string/reviewer_background_official</item>
+        <item>@string/reviewer_background_custom</item>
+    </string-array>
+    <string-array name="reviewer_background_values" translatable="false">
+        <item>@string/reviewer_background_official_value</item>
+        <item>@string/reviewer_background_custom_value</item>
+    </string-array>
+</resources>

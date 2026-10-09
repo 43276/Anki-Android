@@ -72,3 +72,10 @@ hs_err_pid*
 
 # Claude Code related
 /.claude/worktrees/
+
+AnkiDroid/full
+
+tasks.md
+key
+reviewer-pets.md
+reviewer-pets-progress.md

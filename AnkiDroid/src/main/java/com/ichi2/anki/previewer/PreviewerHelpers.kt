@@ -4,6 +4,7 @@ package com.ichi2.anki.previewer
 
 import android.content.Context
 import android.view.ViewGroup.MarginLayoutParams
+import androidx.annotation.ColorInt
 import androidx.appcompat.widget.ThemeUtils
 import androidx.core.view.updateLayoutParams
 import com.google.android.material.card.MaterialCardView
@@ -31,15 +32,16 @@ fun stdHtml(
     context: Context = appContext,
     extraJsAssets: List<String> = emptyList(),
     nightMode: Boolean = false,
+    @ColorInt canvasColor: Int? = null,
 ): String {
     val languageDirectionality = if (LanguageUtils.appLanguageIsRTL()) "rtl" else "ltr"
     val baseTheme = if (nightMode) "dark" else "light"
     val docClass = if (nightMode) "night-mode" else ""
     val rootNightMode = if (nightMode) "[class*=night-mode]" else ""
 
-    val canvasColor = ThemeUtils.getThemeAttrColor(context, android.R.attr.colorBackground).toRGBHex()
+    val canvasColorHex = (canvasColor ?: ThemeUtils.getThemeAttrColor(context, android.R.attr.colorBackground)).toRGBHex()
     val fgColor = ThemeUtils.getThemeAttrColor(context, android.R.attr.textColor).toRGBHex()
-    val colors = ":root$rootNightMode { --canvas: $canvasColor; --fg: $fgColor; }"
+    val colors = ":root$rootNightMode { --canvas: $canvasColorHex; --fg: $fgColor; }"
     // Preserve the system font size while scaling text and em-based layout together.
     val fontScale = context.resources.configuration.fontScale
     val fontScaleCss = if (fontScale != 1f) "html { zoom: $fontScale }" else ""

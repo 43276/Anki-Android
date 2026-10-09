@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="reviewer_pet_title">桌宠</string>
+    <string name="reviewer_pet_enabled">启用桌宠</string>
+    <string name="reviewer_pet_enabled_summary">一只桌宠陪伴本次复习。添加并启用媒体后才会显示。</string>
+    <string name="reviewer_pet_parameters">自定义参数</string>
+    <string name="reviewer_pet_media">桌宠媒体</string>
+    <string name="reviewer_pet_basic">普通设置</string>
+    <string name="reviewer_pet_advanced">高级设置</string>
+    <string name="reviewer_pet_empty">没有已启用的桌宠媒体</string>
+    <string name="reviewer_pet_empty_summary">请添加媒体组并启用，以显示桌宠。应用不包含默认素材。</string>
+    <string name="reviewer_pet_add_group">添加媒体组</string>
+    <string name="reviewer_pet_group_name">媒体组名称</string>
+    <string name="reviewer_pet_group_name_hint">请输入媒体组名称</string>
+    <string name="reviewer_pet_add_files">补充文件</string>
+    <string name="reviewer_pet_rename_group">重命名媒体组</string>
+    <string name="reviewer_pet_delete_group">删除媒体组</string>
+    <string name="reviewer_pet_delete_group_confirm">删除媒体组“%1$s”及其导入副本？本地原文件会保留。</string>
+    <string name="reviewer_pet_remove_file">移除文件</string>
+    <string name="reviewer_pet_remove_file_confirm">从此媒体组移除此文件？</string>
+    <string name="reviewer_pet_preview">预览</string>
+    <string name="reviewer_pet_no_files">此组没有文件，请添加媒体后再启用。</string>
+    <string name="reviewer_pet_import_failed">未能导入支持的媒体，请选择有效的图片或视频。</string>
+    <string name="reviewer_pet_import_partial">已导入所选 %2$d 个文件中的 %1$d 个。</string>
+    <string name="reviewer_pet_operation_failed">无法保存桌宠媒体修改。</string>
+    <string name="reviewer_pet_enabled_group">启用此媒体组</string>
+    <string name="reviewer_pet_group_summary">%1$d 个文件 · %2$s</string>
+    <string name="reviewer_pet_state_enabled">已启用</string>
+    <string name="reviewer_pet_state_disabled">已停用</string>
+    <string name="reviewer_pet_range">%1$d–%2$d %3$s</string>
+    <string name="reviewer_pet_unit_seconds">秒</string>
+    <string name="reviewer_pet_unit_percent">%</string>
+    <string name="reviewer_pet_unit_ms">毫秒</string>
+    <string name="reviewer_pet_unit_dp">dp</string>
+    <string name="reviewer_pet_fly_probability">飞过概率</string>
+    <string name="reviewer_pet_fly_cooldown">飞过冷却</string>
+    <string name="reviewer_pet_reminder_enabled">停留提醒</string>
+    <string name="reviewer_pet_reminder_seconds">提醒等待时长</string>
+    <string name="reviewer_pet_repeat_reminder">退场后在同一卡片再次提醒</string>
+    <string name="reviewer_pet_repeat_seconds">同卡再次提醒间隔</string>
+    <string name="reviewer_pet_size">桌宠大小</string>
+    <string name="reviewer_pet_opacity">透明度</string>
+    <string name="reviewer_pet_move_duration">移动时长</string>
+    <string name="reviewer_pet_edge_hide">边框收起比例</string>
+    <string name="reviewer_pet_auto_expand">自动从边框展开</string>
+    <string name="reviewer_pet_auto_expand_seconds">自动展开等待时长</string>
+    <string name="reviewer_pet_edge_preference">边框偏好</string>
+    <string name="reviewer_pet_fallback_size">无空位时的相对尺寸</string>
+    <string name="reviewer_pet_avoidance">内容避让距离</string>
+    <string name="reviewer_pet_movement_curve">移动曲线</string>
+    <string name="reviewer_pet_multi_click">多击间隔</string>
+    <string name="reviewer_pet_drag_sensitivity">拖动灵敏度</string>
+    <string-array name="reviewer_pet_edge_entries"><item>最近边框</item><item>左边框</item><item>右边框</item></string-array>
+    <string-array name="reviewer_pet_curve_entries"><item>平缓加速</item><item>缓入缓出</item><item>快速加速后渐停</item></string-array>
+    <string name="reviewer_pet_file">文件 %1$d</string>
+</resources>
+

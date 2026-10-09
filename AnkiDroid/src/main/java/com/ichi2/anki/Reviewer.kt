@@ -119,6 +119,7 @@ import com.ichi2.anki.reviewer.CardMarker
 import com.ichi2.anki.reviewer.CardSide
 import com.ichi2.anki.reviewer.FullScreenMode
 import com.ichi2.anki.reviewer.FullScreenMode.Companion.isFullScreenReview
+import com.ichi2.anki.reviewer.ReviewerBackground
 import com.ichi2.anki.reviewer.ReviewerBinding
 import com.ichi2.anki.reviewer.ReviewerUi
 import com.ichi2.anki.scheduling.ForgetCardsDialog
@@ -259,6 +260,7 @@ open class Reviewer :
         micToolBarLayer = findViewById(R.id.mic_tool_bar_layer)
         processor = BindingMap(sharedPrefs(), ViewerCommand.entries, this)
         setupEdgeToEdge()
+        ReviewerBackground.apply(this, findViewById(R.id.root_layout), window)
         if (!sharedPrefs().getBoolean("showDeckTitle", false)) {
             // avoid showing "AnkiDroid"
             supportActionBar?.title = ""
@@ -279,6 +281,8 @@ open class Reviewer :
             else -> launchCatchingTask { answerTimer.resume() }
         }
         super.onResume()
+        ReviewerBackground.apply(this, findViewById(R.id.root_layout), window)
+        webView?.evaluateJavascript(ReviewerBackground.legacyCanvasScript(this), null)
         if (typeAnswer?.autoFocusEditText() == true) {
             answerField?.focusWithKeyboard()
         }

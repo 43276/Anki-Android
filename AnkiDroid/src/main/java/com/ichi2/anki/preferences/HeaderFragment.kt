@@ -216,6 +216,7 @@ class HeaderFragment : SettingsFragment() {
 
             if (Prefs.isNewStudyScreenEnabled) {
                 searchConfiguration.index(R.xml.preferences_reviewer)
+                searchConfiguration.index(R.xml.preferences_reviewer_pet_parameters)
                 val legacySettings =
                     AdvancedSettingsFragment.legacyStudyScreenSettings + AccessibilitySettingsFragment.legacyStudyScreenSettings +
                         AppearanceSettingsFragment.legacyStudyScreenSettings + ControlsSettingsFragment.legacyStudyScreenSettings
@@ -245,7 +246,9 @@ class HeaderFragment : SettingsFragment() {
                 is AccessibilitySettingsFragment -> R.string.pref_accessibility_screen_key
                 is BackupLimitsSettingsFragment -> R.string.pref_backup_limits_screen_key
                 is AdvancedSettingsFragment -> R.string.pref_advanced_screen_key
-                is ReviewerOptionsFragment, is ReviewerMenuSettingsFragment -> R.string.new_reviewer_options_key
+                is ReviewerOptionsFragment, is ReviewerMenuSettingsFragment,
+                is ReviewerPetParametersFragment, is ReviewerPetMediaSettingsFragment,
+                -> R.string.new_reviewer_options_key
                 is DeveloperOptionsFragment -> R.string.pref_developer_options_screen_key
                 is AboutFragment -> R.string.about_screen_key
                 is SwitchProfilesFragment -> R.string.pref_switch_profile_screen_key

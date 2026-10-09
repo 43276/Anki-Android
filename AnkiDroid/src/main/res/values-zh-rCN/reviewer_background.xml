@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <string name="reviewer_background_title">复习页背景</string>
+    <string name="reviewer_background_official">官方默认</string>
+    <string name="reviewer_background_custom">修改配置</string>
+    <string name="reviewer_background_new_study_screen_notice">背景颜色配置切换仅在新学习屏生效。请在「设置 → 新学习屏」中开启新学习屏。</string>
+</resources>

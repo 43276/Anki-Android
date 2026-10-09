@@ -8,6 +8,7 @@ body {
   background-repeat: no-repeat;
   background-position: top;
   background-attachment: fixed;
+  background-color: var(--ankidroid-reviewer-canvas, transparent);
 }
 
 li {
@@ -28,11 +29,11 @@ video {
 
 body.night_mode {
   color: white;
-  background-color: black;
+  background-color: var(--ankidroid-reviewer-canvas, black);
 }
 
 body.ankidroid_dark_mode {
-  background-color: #303030;
+  background-color: var(--ankidroid-reviewer-canvas, #303030);
 }
 
 #content {

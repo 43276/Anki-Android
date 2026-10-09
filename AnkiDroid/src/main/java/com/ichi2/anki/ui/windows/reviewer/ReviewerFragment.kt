@@ -4,8 +4,10 @@ package com.ichi2.anki.ui.windows.reviewer
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.SystemClock
 import android.text.InputType
 import android.view.KeyEvent
 import android.view.MenuItem
@@ -13,6 +15,8 @@ import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -60,7 +64,10 @@ import com.ichi2.anki.previewer.TypeAnswer
 import com.ichi2.anki.previewer.setFrameStyle
 import com.ichi2.anki.previewer.stdHtml
 import com.ichi2.anki.reviewer.BindingMap
+import com.ichi2.anki.reviewer.ReviewerBackground
 import com.ichi2.anki.reviewer.ReviewerBinding
+import com.ichi2.anki.reviewer.pets.ReviewerPetMediaStore
+import com.ichi2.anki.reviewer.pets.ReviewerPetSettings
 import com.ichi2.anki.scheduling.ForgetCardsDialog
 import com.ichi2.anki.scheduling.SetDueDateDialog
 import com.ichi2.anki.scheduling.registerOnForgetHandler
@@ -83,14 +90,21 @@ import com.ichi2.anki.workarounds.SafeWebViewLayout
 import com.ichi2.themes.Themes
 import com.ichi2.utils.dp
 import com.ichi2.utils.show
+import com.ichi2.utils.toRGBHex
 import com.squareup.seismic.ShakeDetector
 import dev.androidbroadcast.vbpd.viewBinding
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 import timber.log.Timber
+import java.io.ByteArrayInputStream
+import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -112,6 +126,11 @@ class ReviewerFragment :
     private lateinit var bindingMap: BindingMap<ReviewerBinding, ViewerAction>
     private lateinit var reviewerWebViewClient: ReviewerWebViewClient
     private var shakeDetector: AnkiShakeDetector? = null
+    private lateinit var petMediaStore: ReviewerPetMediaStore
+    private var petReady = false
+    private var hasReviewerPageLoaded = false
+    private var petGeneration = UUID.randomUUID().toString()
+    private var petCustomViewVisible = false
     private val whiteboardFragment get() = childFragmentManager.findFragmentByTag(WhiteboardFragment::class.jvmName) as? WhiteboardFragment
     private val isBigScreen: Boolean get() = resources.configuration.smallestScreenWidthDp >= 720
 
@@ -130,16 +149,23 @@ class ReviewerFragment :
     override fun onLoadInitialHtml(): String =
         stdHtml(
             context = requireContext(),
-            extraJsAssets = listOf("scripts/ankidroid-reviewer.js"),
+            extraJsAssets = listOf("scripts/ankidroid-reviewer.js", "scripts/reviewer-pet-geometry.js", "scripts/reviewer-pet.js"),
             nightMode = Themes.isNightTheme,
+            canvasColor = ReviewerBackground.color(requireContext(), android.R.attr.colorBackground),
         )
 
     override fun onStart() {
         super.onStart()
+        ReviewerBackground.apply(requireContext(), binding.rootLayout, window, R.attr.alternativeBackgroundColor)
+        val canvasColor = ReviewerBackground.color(requireContext(), android.R.attr.colorBackground)
+        webViewLayout.setBackgroundColor(canvasColor)
+        webViewLayout.evaluateJavascript("document.documentElement.style.setProperty('--canvas', '${canvasColor.toRGBHex()}');")
         shakeDetector?.start()
     }
 
     override fun onStop() {
+        viewModel.reviewerPetSession.pause()
+        webViewLayout.evaluateJavascript("globalThis.reviewerPet?.setActive(false); globalThis.reviewerPet?.snapshot();")
         super.onStop()
         if (!requireActivity().isChangingConfigurations) {
             viewModel.stopAutoAdvance()
@@ -149,6 +175,7 @@ class ReviewerFragment :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        petMediaStore = ReviewerPetMediaStore(requireContext())
         tagsDialogFactory = TagsDialogFactory(this).attachToActivity<TagsDialogFactory>(requireActivity())
     }
 
@@ -157,6 +184,8 @@ class ReviewerFragment :
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+
+        ReviewerBackground.apply(requireContext(), binding.rootLayout, window, R.attr.alternativeBackgroundColor)
 
         binding.backButton.setOnClickListener {
             requireActivity().finish()
@@ -176,6 +205,7 @@ class ReviewerFragment :
         setupActions()
         setupWhiteboard()
         setupTimebox()
+        setupReviewerPet()
 
         viewModel.finishResultFlow.collectIn(lifecycleScope) { result ->
             requireActivity().run {
@@ -246,6 +276,58 @@ class ReviewerFragment :
         if (Prefs.keepScreenOn) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
+    }
+
+    private fun configureReviewerPet() {
+        if (!petReady || view == null) return
+        viewLifecycleOwner.lifecycleScope.launch {
+            val config = ReviewerPetSettings(requireContext()).read()
+            val media = withContext(Dispatchers.IO) { petMediaStore.enabledMedia() }
+            if (!petReady || view == null) return@launch
+            viewModel.reviewerPetSession.configure(config, media.isNotEmpty())
+            val payload =
+                JSONObject()
+                    .put("config", config.toJson())
+                    .put("media", JSONArray(media.map { JSONObject().put("url", it.url).put("mimeType", it.mimeType) }))
+                    .put("generation", petGeneration)
+                    .put("visitId", viewModel.reviewerPetSession.visitId)
+                    .put("state", viewModel.reviewerPetSession.visualState)
+            webViewLayout.evaluateJavascript("globalThis.reviewerPet?.configure($payload);")
+        }
+    }
+
+    private fun setupReviewerPet() {
+        viewModel.onCardUpdatedFlow.collectIn(viewLifecycleOwner.lifecycleScope) {
+            val visit = viewModel.reviewerPetSession.visitId
+            webViewLayout.evaluateJavascript("globalThis.reviewerPet?.visit($visit);")
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                configureReviewerPet()
+                while (true) {
+                    val active =
+                        petReady && viewModel.reviewerPetSession.visitId > 0 &&
+                            binding.root.hasWindowFocus() && !binding.typeAnswerEditText.isFocused &&
+                            !viewModel.isPetPresentationSuspended && !petCustomViewVisible &&
+                            !binding.reviewerMenuView.isPopupShowing &&
+                            binding.checkPronunciationContainer.getFragment<CheckPronunciationFragment?>()?.isAudioBusy != true
+                    val allowed = active && !viewModel.isPetPresentationBlocked && !viewModel.reviewerPetSession.isWebBusy
+                    webViewLayout.evaluateJavascript("globalThis.reviewerPet?.setActive($active);")
+                    val action = viewModel.reviewerPetSession.tick(SystemClock.elapsedRealtime(), allowed, active)
+                    if (action != null) {
+                        val visit = viewModel.reviewerPetSession.visitId
+                        webViewLayout.evaluateJavascript(
+                            "_queueAction(() => globalThis.reviewerPet?.command('$action', $visit));",
+                        )
+                    }
+                    delay(250)
+                }
+            }
+        }
+    }
+
+    fun onPetUserActivity() {
+        viewModel.reviewerPetSession.activity(SystemClock.elapsedRealtime())
     }
 
     private fun setupTypeAnswer() {
@@ -670,13 +752,40 @@ class ReviewerFragment :
     ) = viewModel.onEditedTags(selectedTags)
 
     override fun onCreateWebViewClient(savedInstanceState: Bundle?): CardViewerWebViewClient =
-        ReviewerWebViewClient(savedInstanceState).also { reviewerWebViewClient = it }
+        ReviewerWebViewClient(savedInstanceState ?: if (hasReviewerPageLoaded) Bundle() else null).also { reviewerWebViewClient = it }
 
     override fun onCreateWebChromeClient(): CardViewerWebChromeClient = ReviewerWebChromeClient()
 
     private inner class ReviewerWebViewClient(
         savedInstanceState: Bundle?,
     ) : CardViewerWebViewClient(savedInstanceState) {
+        override fun shouldInterceptRequest(
+            view: WebView?,
+            request: WebResourceRequest,
+        ): WebResourceResponse? {
+            if (request.url.host == ReviewerPetMediaStore.HOST && request.method != "GET") {
+                return WebResourceResponse(
+                    "text/plain",
+                    "UTF-8",
+                    405,
+                    "Method Not Allowed",
+                    emptyMap(),
+                    ByteArrayInputStream(byteArrayOf()),
+                )
+            }
+            return petMediaStore.intercept(request.url) ?: super.shouldInterceptRequest(view, request)
+        }
+
+        override fun onPageStarted(
+            view: WebView?,
+            url: String?,
+            favicon: Bitmap?,
+        ) {
+            petReady = false
+            viewModel.reviewerPetSession.pause()
+            super.onPageStarted(view, url, favicon)
+        }
+
         // Capture the fresh WebView's scale before any pinch zoom; this includes screen density.
         private val initialScale: Float = if (!isRobolectric) webViewLayout.scale else 1F
         private var scale: Float = initialScale
@@ -760,6 +869,13 @@ class ReviewerFragment :
             url: String?,
         ) {
             super.onPageFinished(view, url)
+            if (!petReady) {
+                petReady = true
+                hasReviewerPageLoaded = true
+                petGeneration = UUID.randomUUID().toString()
+                viewModel.reviewerPetSession.attach(petGeneration)
+                configureReviewerPet()
+            }
             Prefs.cardZoom.let {
                 if (it == 100) return@let
                 val scale = it / 100.0
@@ -770,7 +886,16 @@ class ReviewerFragment :
     }
 
     private inner class ReviewerWebChromeClient : CardViewerWebChromeClient() {
+        override fun onShowCustomView(
+            paramView: View,
+            paramCustomViewCallback: android.webkit.WebChromeClient.CustomViewCallback?,
+        ) {
+            petCustomViewVisible = true
+            super.onShowCustomView(paramView, paramCustomViewCallback)
+        }
+
         override fun onHideCustomView() {
+            petCustomViewVisible = false
             val barsToHide = Prefs.hideSystemBars
             if (barsToHide == HideSystemBars.NONE) {
                 super.onHideCustomView()
