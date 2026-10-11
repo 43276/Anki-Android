@@ -72,6 +72,21 @@ class ReviewerPetSettingsTest {
     }
 
     @Test
+    fun `polynomial movement curves can be selected and serialized`() {
+        val values = context.resources.getStringArray(R.array.reviewer_pet_curve_values)
+        val entries = context.resources.getStringArray(R.array.reviewer_pet_curve_entries)
+        assertEquals(5, values.size)
+        assertEquals(values.size, entries.size)
+        for (curve in listOf("minimum-jerk", "asymmetric-smooth-stop")) {
+            assertTrue(curve in values)
+            preferences.edit { putString(context.getString(R.string.reviewer_pet_movement_curve_key), curve) }
+            val config = settings.read()
+            assertEquals(curve, config.movementCurve)
+            assertEquals(curve, config.toJson().getString("movementCurve"))
+        }
+    }
+
+    @Test
     fun `unknown choices and malformed preference types use safe defaults`() {
         preferences.edit {
             putString(context.getString(R.string.reviewer_pet_movement_curve_key), "unexpected")

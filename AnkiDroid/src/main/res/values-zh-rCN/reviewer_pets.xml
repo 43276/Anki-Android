@@ -52,7 +52,7 @@
     <string name="reviewer_pet_multi_click">多击间隔</string>
     <string name="reviewer_pet_drag_sensitivity">拖动灵敏度</string>
     <string-array name="reviewer_pet_edge_entries"><item>最近边框</item><item>左边框</item><item>右边框</item></string-array>
-    <string-array name="reviewer_pet_curve_entries"><item>平缓加速</item><item>缓入缓出</item><item>快速加速后渐停</item></string-array>
+    <string-array name="reviewer_pet_curve_entries"><item>平缓加速</item><item>缓入缓出</item><item>快速加速后渐停</item><item>五次 minimum-jerk</item><item>非对称柔和收尾</item></string-array>
     <string name="reviewer_pet_file">文件 %1$d</string>
 </resources>
 

@@ -73,9 +73,9 @@
     <string name="reviewer_pet_multi_click" maxLength="41">Multiple-click interval</string>
     <string name="reviewer_pet_drag_sensitivity" maxLength="41">Drag sensitivity</string>
     <string-array name="reviewer_pet_edge_entries"><item>Nearest edge</item><item>Left edge</item><item>Right edge</item></string-array>
-    <string-array name="reviewer_pet_curve_entries"><item>Gentle acceleration</item><item>Ease in and out</item><item>Quick acceleration and gradual stop</item></string-array>
+    <string-array name="reviewer_pet_curve_entries"><item>Gentle acceleration</item><item>Ease in and out</item><item>Quick acceleration and gradual stop</item><item>Quintic minimum jerk</item><item>Asymmetric smooth stop</item></string-array>
     <string-array name="reviewer_pet_edge_values" translatable="false"><item>nearest</item><item>left</item><item>right</item></string-array>
-    <string-array name="reviewer_pet_curve_values" translatable="false"><item>linear</item><item>ease-in-out</item><item>ease-out</item></string-array>
+    <string-array name="reviewer_pet_curve_values" translatable="false"><item>linear</item><item>ease-in-out</item><item>ease-out</item><item>minimum-jerk</item><item>asymmetric-smooth-stop</item></string-array>
     <string name="reviewer_pet_file">File %1$d</string>
 </resources>
 

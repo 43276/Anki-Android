@@ -357,6 +357,50 @@ globalThis.reviewerPet = (() => {
               : "cubic-bezier(0.4, 0, 0.2, 1)";
     }
 
+    function motionProgress(t) {
+        if (t === 0 || t === 1) return t;
+        if (config.movementCurve === "minimum-jerk") return t ** 3 * (10 + t * (-15 + 6 * t));
+        // Integral of v(t) = t(1-t)^3(3220 + 43275t + 20125t^2)/1026.
+        // Unit distance/duration: peak speed 2 at t=0.4; final acceleration and jerk are zero.
+        return (
+            (t ** 2 * (1610 + t * (11205 + t * (-25010 + t * (13246 + t * (2850 - 2875 * t)))))) /
+            1026
+        );
+    }
+
+    function animateMotion(frames, duration) {
+        const sampled = ["minimum-jerk", "asymmetric-smooth-stop"].includes(config.movementCurve);
+        // Sample displacement, not velocity. Ordinary linear keyframes also work in older WebViews.
+        const steps = sampled ? 200 : 1;
+        const easing = sampled ? "linear" : motionEasing();
+        const keyframes = [];
+        const frameAt = (from, to, progress, offset) => {
+            const frame = { offset, easing };
+            for (const name of Object.keys(from)) {
+                if (name === "offset") continue;
+                const value = from[name] + (to[name] - from[name]) * progress;
+                if (name === "translateY") frame.transform = `translateY(${value}px)`;
+                else frame[name] = name === "opacity" ? value : `${value}px`;
+            }
+            return frame;
+        };
+        for (let segment = 0; segment < frames.length - 1; segment++) {
+            const from = frames[segment],
+                to = frames[segment + 1];
+            const start = from.offset ?? segment / (frames.length - 1),
+                end = to.offset ?? (segment + 1) / (frames.length - 1);
+            for (let step = 0; step < steps; step++) {
+                const t = step / steps;
+                keyframes.push(
+                    frameAt(from, to, sampled ? motionProgress(t) : t, start + (end - start) * t),
+                );
+            }
+        }
+        const last = frames[frames.length - 1];
+        keyframes.push(frameAt(last, last, 0, last.offset ?? 1));
+        return sprite.animate(keyframes, { duration, easing: "linear" });
+    }
+
     function selectMedia() {
         if (!media.length) return false;
         if (state.media < 0 || state.media >= media.length)
@@ -524,22 +568,22 @@ globalThis.reviewerPet = (() => {
         savePosition(p);
         draw(p, !!pointer);
         report(passive ? "geometry" : "moving");
-        animation = sprite.animate(
+        animation = animateMotion(
             [
                 {
-                    left: `${from.x - b.x}px`,
-                    top: `${from.y - b.y}px`,
-                    width: `${from.width}px`,
-                    height: `${from.height}px`,
+                    left: from.x - b.x,
+                    top: from.y - b.y,
+                    width: from.width,
+                    height: from.height,
                 },
                 {
-                    left: `${p.x - b.x}px`,
-                    top: `${p.y - b.y}px`,
-                    width: `${p.width}px`,
-                    height: `${p.height}px`,
+                    left: p.x - b.x,
+                    top: p.y - b.y,
+                    width: p.width,
+                    height: p.height,
                 },
             ],
-            { duration, easing: motionEasing() },
+            duration,
         );
         try {
             await animation.finished;
@@ -615,21 +659,17 @@ globalThis.reviewerPet = (() => {
         draw(end, false);
         report("flightStarted");
         const frame = (p, offset) => ({
-            left: `${p.x - b.x}px`,
-            top: `${p.y - b.y}px`,
-            width: `${p.width}px`,
-            height: `${p.height}px`,
+            left: p.x - b.x,
+            top: p.y - b.y,
+            width: p.width,
+            height: p.height,
             offset,
-            easing: motionEasing(),
         });
         const frames = [frame(from, 0)];
         if (original !== "hidden")
             frames.push(frame({ x: b.x + b.width, y, width: size, height: size }, 0.6));
         frames.push(frame(end, 1));
-        animation = sprite.animate(frames, {
-            duration: config.moveDurationMs * 2,
-            easing: "linear",
-        });
+        animation = animateMotion(frames, config.moveDurationMs * 2);
         try {
             await animation.finished;
         } catch {
@@ -708,12 +748,12 @@ globalThis.reviewerPet = (() => {
         state.returnMode = "hidden";
         target.hidden = true;
         report("dismissed");
-        animation = sprite.animate(
+        animation = animateMotion(
             [
-                { opacity: config.opacityPercent / 100 },
-                { opacity: 0, transform: "translateY(-30px)" },
+                { opacity: config.opacityPercent / 100, translateY: 0 },
+                { opacity: 0, translateY: -30 },
             ],
-            { duration: Math.min(600, config.moveDurationMs), easing: motionEasing() },
+            Math.min(600, config.moveDurationMs),
         );
         try {
             await animation.finished;

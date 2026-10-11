@@ -19,6 +19,7 @@ const config = {
     edgePreference: "nearest", movementCurve: "ease-out", multiClickMs: 150,
     dragSensitivityPercent: 100,
 };
+const polynomialCurves = ["minimum-jerk", "asymmetric-smooth-stop"];
 let browser;
 
 test.before(async () => {
@@ -167,7 +168,7 @@ test("a single click moves after recognition, double click collapses, and triple
 });
 
 test("every saved movement curve accelerates from rest and slows before arriving", async t => {
-    for (const movementCurve of ["linear", "ease-out", "ease-in-out"]) {
+    for (const movementCurve of ["linear", "ease-out", "ease-in-out", ...polynomialCurves]) {
         const page = await setup(t, "", { moveDurationMs: 600, movementCurve });
         await appear(page);
         const samples = await page.evaluate(async () => {
@@ -203,6 +204,104 @@ test("every saved movement curve accelerates from rest and slows before arriving
         assert.ok(distances[3] < distances[2] * 0.8, `${movementCurve} stopped abruptly`);
     }
 });
+
+for (const movementCurve of polynomialCurves) {
+    test(`${movementCurve} follows its designed velocity profile and stops with low acceleration`, async t => {
+        const page = await setup(t, "", { moveDurationMs: 1000, movementCurve });
+        await appear(page);
+        const samples = await page.evaluate(() => {
+            const sprite = window.__petShadow.querySelector(".sprite");
+            reviewerPet.command("expand", 1);
+            const motion = sprite.getAnimations()[0];
+            if (!motion) throw new Error("Movement did not start");
+            motion.pause();
+            const duration = motion.effect.getTiming().duration;
+            const samples = [];
+            for (let step = 0; step <= 100; step++) {
+                motion.currentTime = duration * step / 100;
+                const style = getComputedStyle(sprite);
+                samples.push({ x: parseFloat(style.left), y: parseFloat(style.top) });
+            }
+            motion.finish();
+            return { duration, samples };
+        });
+        assert.equal(samples.duration, 1000);
+        const first = samples.samples[0], last = samples.samples.at(-1);
+        const dx = last.x - first.x, dy = last.y - first.y;
+        const distanceSquared = dx * dx + dy * dy;
+        assert.ok(distanceSquared > 100, "The verification move must cover a measurable distance");
+        const progress = samples.samples.map(point =>
+            ((point.x - first.x) * dx + (point.y - first.y) * dy) / distanceSquared);
+        assert.ok(progress.every((value, index) => index === 0 || value >= progress[index - 1] - 1e-5));
+        const velocities = progress.slice(1, -1).map((_value, index) =>
+            (progress[index + 2] - progress[index]) / 0.02);
+        const peakSpeed = Math.max(...velocities);
+        const peakTime = (velocities.indexOf(peakSpeed) + 1) / 100;
+        const asymmetric = movementCurve === "asymmetric-smooth-stop";
+        assert.ok(Math.abs(peakSpeed - (asymmetric ? 2 : 1.875)) < 0.03, `Unexpected peak speed ${peakSpeed}`);
+        assert.ok(Math.abs(peakTime - (asymmetric ? 0.4 : 0.5)) < 0.021, `Unexpected peak time ${peakTime}`);
+        const initialAcceleration = (progress[2] - 2 * progress[1] + progress[0]) / 0.01 ** 2;
+        const finalAcceleration = (progress[100] - 2 * progress[99] + progress[98]) / 0.01 ** 2;
+        assert.ok(Math.abs(finalAcceleration) < 1, `The finish acceleration remained high: ${finalAcceleration}`);
+        if (asymmetric) {
+            assert.ok(initialAcceleration > 2, "The asymmetric curve should accelerate promptly from rest");
+            assert.ok(progress[50] > 0.65 && progress[50] < 0.67);
+        } else {
+            assert.ok(Math.abs(initialAcceleration) < 1, "Minimum jerk should start with low acceleration");
+            assert.ok(Math.abs(progress[50] - 0.5) < 0.001);
+        }
+    });
+
+    test(`${movementCurve} applies to both flight legs and the dismissal transform and opacity`, async t => {
+        const page = await setup(t, "", { moveDurationMs: 1000, movementCurve });
+        await appear(page);
+        await page.evaluate(() => reviewerPet.command("fly", 1));
+        await waitReport(page, "flightStarted");
+        const flight = await page.evaluate(() => {
+            const sprite = window.__petShadow.querySelector(".sprite");
+            const motion = sprite.getAnimations()[0];
+            motion.pause();
+            const duration = motion.effect.getTiming().duration;
+            const points = [0, 0.3, 0.6, 0.8, 1].map(fraction => {
+                motion.currentTime = duration * fraction;
+                const style = getComputedStyle(sprite);
+                return { x: parseFloat(style.left), y: parseFloat(style.top) };
+            });
+            motion.finish();
+            return { duration, points };
+        });
+        assert.equal(flight.duration, 2000);
+        const midpointProgress = (start, middle, end) => {
+            const dx = end.x - start.x, dy = end.y - start.y;
+            assert.ok(dx * dx + dy * dy > 100);
+            return ((middle.x - start.x) * dx + (middle.y - start.y) * dy) / (dx * dx + dy * dy);
+        };
+        const outbound = midpointProgress(...flight.points.slice(0, 3));
+        const inbound = midpointProgress(...flight.points.slice(2));
+        const expectedMidpoint = movementCurve === "minimum-jerk" ? 0.5 : 0.658877;
+        assert.ok(Math.abs(outbound - expectedMidpoint) < 0.001, `Unexpected outbound progress ${outbound}`);
+        assert.ok(Math.abs(inbound - expectedMidpoint) < 0.001, `Unexpected inbound progress ${inbound}`);
+        await waitReport(page, "flightEnded");
+        await clickPet(page, 3);
+        await waitReport(page, "dismissed");
+        const dismissal = await page.evaluate(() => {
+            const sprite = window.__petShadow.querySelector(".sprite");
+            const motion = sprite.getAnimations()[0];
+            motion.pause();
+            const duration = motion.effect.getTiming().duration;
+            motion.currentTime = duration / 2;
+            const style = getComputedStyle(sprite);
+            const result = { duration, progress: 1 - parseFloat(style.opacity),
+                translation: -new DOMMatrixReadOnly(style.transform).m42 / 30 };
+            motion.finish();
+            return result;
+        });
+        assert.equal(dismissal.duration, 600);
+        assert.ok(Math.abs(dismissal.progress - expectedMidpoint) < 0.001);
+        assert.ok(Math.abs(dismissal.translation - expectedMidpoint) < 0.001);
+        assert.equal((await snapshot(page)).mode, "hidden");
+    });
+}
 
 test("border dragging follows vertically, stays tucked, and does not turn release into expansion", async t => {
     const page = await setup(t);

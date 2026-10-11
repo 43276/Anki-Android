@@ -77,7 +77,12 @@ class ReviewerPetSettings(
             edgePreference = choice(R.string.reviewer_pet_edge_preference_key, "nearest", setOf("nearest", "left", "right")),
             fallbackSizePercent = number(R.string.reviewer_pet_fallback_size_key, 60, 25, 100),
             avoidanceDp = number(R.string.reviewer_pet_avoidance_key, 8, 0, 64),
-            movementCurve = choice(R.string.reviewer_pet_movement_curve_key, "ease-in-out", setOf("linear", "ease-in-out", "ease-out")),
+            movementCurve =
+                choice(
+                    R.string.reviewer_pet_movement_curve_key,
+                    "ease-in-out",
+                    setOf("linear", "ease-in-out", "ease-out", "minimum-jerk", "asymmetric-smooth-stop"),
+                ),
             multiClickMs = number(R.string.reviewer_pet_multi_click_key, 400, 150, 600),
             dragSensitivityPercent = number(R.string.reviewer_pet_drag_sensitivity_key, 100, 25, 200),
         )
