@@ -19,6 +19,7 @@
     <string name="reviewer_pet_delete_group_confirm">删除媒体组“%1$s”及其导入副本？本地原文件会保留。</string>
     <string name="reviewer_pet_remove_file">移除文件</string>
     <string name="reviewer_pet_remove_file_confirm">从此媒体组移除此文件？</string>
+    <string name="reviewer_pet_remove_last_file_confirm">这是媒体组“%1$s”中的最后一个文件。移除后将同时删除该媒体组，本地原文件会保留。是否继续？</string>
     <string name="reviewer_pet_preview">预览</string>
     <string name="reviewer_pet_no_files">此组没有文件，请添加媒体后再启用。</string>
     <string name="reviewer_pet_import_failed">未能导入支持的媒体，请选择有效的图片或视频。</string>

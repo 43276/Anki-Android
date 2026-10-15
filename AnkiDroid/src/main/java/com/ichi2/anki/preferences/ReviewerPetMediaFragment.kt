@@ -114,6 +114,12 @@ class ReviewerPetGroupFragment : ReviewerPetMediaSettingsFragment() {
             if (uris.isNotEmpty()) mutate { reportImport(mediaStore.addFiles(groupId, uris), uris.size) }
         }
 
+    override fun onResume() {
+        super.onResume()
+        // A deletion can finish while this screen is being recreated, before its navigation callback runs.
+        if (mediaStore.groups().none { it.id == groupId }) parentFragmentManager.popBackStack()
+    }
+
     override fun refresh() {
         preferenceScreen.removeAll()
         val group = mediaStore.groups().firstOrNull { it.id == groupId } ?: return
@@ -142,34 +148,37 @@ class ReviewerPetGroupFragment : ReviewerPetMediaSettingsFragment() {
             )
         }
         group.files.forEachIndexed { index, fileName ->
-            preferenceScreen.addPreference(
+            val category = PreferenceCategory(requireContext()).apply { key = "petMediaFile:$fileName" }
+            preferenceScreen.addPreference(category)
+            category.addPreference(
                 Preference(requireContext()).apply {
+                    key = "petMediaPreview:$fileName"
                     title = getString(R.string.reviewer_pet_file, index + 1)
                     summary = fileName.substringAfterLast('.').uppercase()
                     setIcon(R.drawable.ic_image)
                     addThumbnail(this, group.copy(files = listOf(fileName)))
                     setOnPreferenceClickListener {
-                        MaterialAlertDialogBuilder(requireContext())
-                            .setTitle(title)
-                            .setItems(
-                                arrayOf(getString(R.string.reviewer_pet_preview), getString(R.string.reviewer_pet_remove_file)),
-                            ) { _, which ->
-                                if (which == 0) {
-                                    preview(group, fileName)
-                                } else {
-                                    MaterialAlertDialogBuilder(requireContext())
-                                        .setTitle(R.string.reviewer_pet_remove_file)
-                                        .setMessage(R.string.reviewer_pet_remove_file_confirm)
-                                        .setNegativeButton(android.R.string.cancel, null)
-                                        .setPositiveButton(
-                                            android.R.string.ok,
-                                        ) { _, _ -> mutate { mediaStore.removeFile(groupId, fileName) } }
-                                        .show()
-                                }
-                            }.show()
+                        preview(group, fileName)
                         true
                     }
                 },
+            )
+            category.addPreference(
+                action(R.string.reviewer_pet_remove_file, R.drawable.ic_delete) {
+                    val lastFile = group.files.size == 1
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(R.string.reviewer_pet_remove_file)
+                        .setMessage(
+                            if (lastFile) {
+                                getString(R.string.reviewer_pet_remove_last_file_confirm, group.name)
+                            } else {
+                                getString(R.string.reviewer_pet_remove_file_confirm)
+                            },
+                        ).setNegativeButton(android.R.string.cancel, null)
+                        .setPositiveButton(R.string.reviewer_pet_remove_file) { _, _ ->
+                            mutate(close = lastFile) { mediaStore.removeFile(groupId, fileName) }
+                        }.show()
+                }.apply { key = "petMediaRemove:$fileName" },
             )
         }
         updateEnabled()

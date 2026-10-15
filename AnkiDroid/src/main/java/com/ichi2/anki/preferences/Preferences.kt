@@ -102,7 +102,7 @@ class PreferencesFragment :
 
         childFragmentManager.commit {
             setReorderingAllowed(true)
-            replace(R.id.settings_container, fragmentClass, null)
+            replace(R.id.settings_container, fragmentClass, Bundle(pref.extras))
             setFadeTransition(this)
             if (!settingsIsSplit || caller !is HeaderFragment) {
                 addToBackStack(null)

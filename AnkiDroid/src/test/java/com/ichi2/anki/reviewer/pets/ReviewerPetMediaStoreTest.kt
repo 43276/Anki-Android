@@ -85,23 +85,79 @@ class ReviewerPetMediaStoreTest {
     }
 
     @Test
-    fun `enabled files form a flat unweighted pool and deleting last file disables group`() {
+    fun `enabled files form a flat unweighted pool`() {
         val first = assertNotNull(store.createGroup("First", listOf(image("one.png"), image("two.png"))))
         val second = assertNotNull(store.createGroup("Second", listOf(image("three.png"))))
         assertEquals(3, store.enabledMedia().size)
         assertEquals(2, store.enabledMedia().count { it.groupId == first.id })
         assertEquals(1, store.enabledMedia().count { it.groupId == second.id })
-        store.removeFile(second.id, second.files.single())
-        assertFalse(store.groups().first { it.id == second.id }.enabled)
-        store.setEnabled(second.id, true)
-        assertFalse(store.groups().first { it.id == second.id }.enabled)
+        store.setEnabled(second.id, false)
+        assertEquals(2, store.enabledMedia().size)
         assertEquals(1, store.addFiles(second.id, listOf(image("four.png"))))
         assertFalse(store.groups().first { it.id == second.id }.enabled)
         store.setEnabled(second.id, true)
-        assertEquals(3, store.enabledMedia().size)
+        assertEquals(4, store.enabledMedia().size)
         store.deleteGroup(first.id)
-        assertEquals(1, store.enabledMedia().size)
+        assertEquals(2, store.enabledMedia().size)
         assertFalse(File(context.filesDir, "reviewer-pets/${first.id}").exists())
+    }
+
+    @Test
+    fun `deleting individual media removes only copies and removes the group after the last file`() {
+        val sources = listOf(image("first.png"), image("second.png"))
+        val originals = sources.map { File(it.path!!) }
+        val originalBytes = originals.map { it.readBytes() }
+        val group = assertNotNull(store.createGroup("Pet", sources))
+        val other = assertNotNull(store.createGroup("Other", listOf(image("other.png"))))
+        val copies = group.files.map { assertNotNull(store.mediaFile(group.id, it)) }
+        val otherCopy = assertNotNull(store.mediaFile(other.id, other.files.single()))
+        val otherBytes = otherCopy.readBytes()
+        val directory = copies.first().parentFile!!
+
+        store.removeFile(group.id, group.files.first())
+
+        assertFalse(copies.first().exists())
+        assertTrue(copies.last().isFile)
+        assertTrue(directory.isDirectory)
+        assertEquals(listOf(group.copy(files = listOf(group.files.last())), other), ReviewerPetMediaStore(context).groups())
+
+        store.removeFile(group.id, group.files.last())
+
+        assertFalse(directory.exists())
+        assertEquals(listOf(other), ReviewerPetMediaStore(context).groups())
+        assertEquals(listOf(other.id), store.enabledMedia().map { it.groupId })
+        assertContentEquals(otherBytes, otherCopy.readBytes())
+        originals.zip(originalBytes).forEach { (original, bytes) -> assertContentEquals(bytes, original.readBytes()) }
+    }
+
+    @Test
+    fun `deleting an unmatched media file leaves group files and manifest unchanged`() {
+        val group = assertNotNull(store.createGroup("Pet", listOf(image("listed.png"))))
+        val other = assertNotNull(store.createGroup("Other", listOf(image("another.png"))))
+        val copy = assertNotNull(store.mediaFile(group.id, group.files.single()))
+        val manifest = File(context.filesDir, "reviewer-pets/groups.json")
+        val originalManifest = manifest.readBytes()
+
+        store.removeFile(group.id, other.files.single())
+        store.removeFile(UUID.randomUUID().toString(), group.files.single())
+
+        assertContentEquals(originalManifest, manifest.readBytes())
+        assertEquals(listOf(group, other), ReviewerPetMediaStore(context).groups())
+        assertTrue(copy.isFile)
+        assertTrue(assertNotNull(store.mediaFile(other.id, other.files.single())).isFile)
+    }
+
+    @Test
+    fun `deleting the last available file removes a group with missing media references`() {
+        val group = assertNotNull(store.createGroup("Pet", listOf(image("available.png"), image("missing.png"))))
+        val firstCopy = assertNotNull(store.mediaFile(group.id, group.files.first()))
+        assertTrue(assertNotNull(store.mediaFile(group.id, group.files.last())).delete())
+        assertEquals(listOf(group.files.first()), store.groups().single().files)
+
+        store.removeFile(group.id, group.files.first())
+
+        assertTrue(ReviewerPetMediaStore(context).groups().isEmpty())
+        assertFalse(firstCopy.parentFile!!.exists())
     }
 
     @Test

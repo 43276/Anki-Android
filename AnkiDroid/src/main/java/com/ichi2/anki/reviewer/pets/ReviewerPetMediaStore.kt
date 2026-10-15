@@ -117,19 +117,14 @@ class ReviewerPetMediaStore(
         synchronized(lock) {
             val groups = readGroups()
             val group = groups.firstOrNull { it.id == groupId && fileName in it.files } ?: return
-            val remaining = group.files.filterNot { it == fileName }
-            saveGroups(
-                groups.map {
-                    if (it.id ==
-                        groupId
-                    ) {
-                        it.copy(files = remaining, enabled = it.enabled && remaining.isNotEmpty())
-                    } else {
-                        it
-                    }
-                },
-            )
-            file(groupId, fileName)?.delete()
+            val remaining = group.files.filter { it != fileName && file(groupId, it)?.isFile == true }
+            if (remaining.isEmpty()) {
+                saveGroups(groups.filterNot { it.id == groupId })
+                removeGroupDirectory(groupId)
+            } else {
+                saveGroups(groups.map { if (it.id == groupId) it.copy(files = remaining) else it })
+                file(groupId, fileName)?.delete()
+            }
         }
     }
 

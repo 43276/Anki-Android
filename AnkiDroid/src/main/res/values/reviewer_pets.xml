@@ -40,6 +40,7 @@
     <string name="reviewer_pet_delete_group_confirm">Delete “%1$s” and its imported copies? Original local files will be kept.</string>
     <string name="reviewer_pet_remove_file">Remove file</string>
     <string name="reviewer_pet_remove_file_confirm">Remove this file from the group?</string>
+    <string name="reviewer_pet_remove_last_file_confirm">This is the last file in “%1$s”. Removing it will also delete the group. Original local files will be kept. Continue?</string>
     <string name="reviewer_pet_preview" comment="Action to preview an imported pet image or video; distinct from previewing flashcards">Preview</string>
     <string name="reviewer_pet_no_files">This group has no files. Add media before enabling it.</string>
     <string name="reviewer_pet_import_failed">No supported media was imported. Choose a valid image or video.</string>
